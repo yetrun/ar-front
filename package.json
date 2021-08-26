@@ -1,0 +1,9 @@
+{
+  "name": "ar-front",
+  "version": "0.1.0-preview",
+  "description": "A data mapper framework using in web front.",
+  "main": "lib/index.js",
+  "repository": "https://github.com/yetrun/ar-front",
+  "author": "yetrun",
+  "license": "Apache-2.0"
+}
