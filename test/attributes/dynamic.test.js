@@ -17,6 +17,8 @@ test('set attributes through constructor', t => {
   t.is(user.name, 'Jim')
   t.is(user.age, null)
   t.is(user.foo, 'foo')
+
+  t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
 })
 
 test('set attributes through `attributes` property', t => {
@@ -27,12 +29,16 @@ test('set attributes through `attributes` property', t => {
   t.is(user.age, null)
   t.is(user.foo, 'foo')
   t.false('bar' in user)
+
+  t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
 })
 
 test('set attributes through dot operator', t => {
-  const user = new User({ name: 'Jim' })
+  const user = new User({ age: 18 })
   user.name = 'Jim'
   user.foo = 'foo'
 
-  t.deepEqual(user.attributes, { name: 'Jim', age: null, foo: 'foo' })
+  t.deepEqual(user.attributes, { name: 'Jim', age: 18, foo: 'foo' })
+
+  t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
 })
