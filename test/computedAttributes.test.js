@@ -6,7 +6,7 @@ const User = Model.extend({
     firstName: {},
     lastName: {}
   },
-  computedAttributes: {
+  computed: {
     fullName: {
       get () {
         return this.firstName + ' ' + this.lastName

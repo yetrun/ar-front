@@ -11,7 +11,7 @@ const User = Model.extend({
       return this.attributes
     }
   },
-  staticActions: {
+  static: {
     bar () {
       return this
     }
