@@ -1,9 +1,6 @@
-/* 测试 `model.attributes` 的行为。
- *
- * 利用 `model.attributes`，可定制模型的行为，包括：
- *
- * - 定制 API 调用，如 `list`, `find` 等；
- * - 添加自定义函数或属性，如 `getFullName` 等。
+/* config:
+ * - defineAttributesIn: 'object'
+ * - dynamicAttributes: true
  *
  */
 const test = require('ava')
@@ -14,6 +11,10 @@ const User = Model.extend({
   attributes: {
     name: {},
     age: {}
+  },
+  config: {
+    defineAttributesIn: 'object',
+    dynamicAttributes: true
   }
 })
 
@@ -22,20 +23,23 @@ test('set attributes through constructor', t => {
 
   t.is(user.name, 'Jim')
   t.is(user.age, null)
-  t.false('foo' in user)
+  t.is(user.foo, 'foo')
 
-  t.deepEqual(Object.keys(user), ['name', 'age'])
+  t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
+  t.deepEqual(Object.keys(Object.getPrototypeOf(user)), [])
 })
 
 test('set attributes through `attributes` property', t => {
-  const user = new User({ age: 18 })
+  const user = new User({ age: 18, bar: 'bar' })
   user.attributes = { name: 'Jim', foo: 'foo' }
 
   t.is(user.name, 'Jim')
   t.is(user.age, null)
-  t.false('foo' in user)
+  t.is(user.foo, 'foo')
+  t.false('bar' in user)
 
-  t.deepEqual(Object.keys(user), ['name', 'age'])
+  t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
+  t.deepEqual(Object.keys(Object.getPrototypeOf(user)), [])
 })
 
 test('set attributes through dot operator', t => {
@@ -43,7 +47,8 @@ test('set attributes through dot operator', t => {
   user.name = 'Jim'
   user.foo = 'foo'
 
-  t.deepEqual(user.attributes, { name: 'Jim', age: 18 })
+  t.deepEqual(user.attributes, { name: 'Jim', age: 18, foo: 'foo' })
 
   t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
+  t.deepEqual(Object.keys(Object.getPrototypeOf(user)), [])
 })

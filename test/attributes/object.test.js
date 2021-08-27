@@ -1,14 +1,18 @@
+/* config:
+ * - defineAttributesIn: 'object'
+ * - dynamicAttributes: false
+ *
+ */
 const test = require('ava')
 const Model = require('../../lib/model')
 
-// 定义 Model 类
 const User = Model.extend({
   attributes: {
     name: {},
     age: {}
   },
   config: {
-    dynamicAttributes: true
+    defineAttributesIn: 'object'
   }
 })
 
@@ -17,21 +21,22 @@ test('set attributes through constructor', t => {
 
   t.is(user.name, 'Jim')
   t.is(user.age, null)
-  t.is(user.foo, 'foo')
+  t.false('foo' in user)
 
-  t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
+  t.deepEqual(Object.keys(user), ['name', 'age'])
+  t.deepEqual(Object.keys(Object.getPrototypeOf(user)), [])
 })
 
 test('set attributes through `attributes` property', t => {
-  const user = new User({ age: 18, bar: 'bar' })
+  const user = new User({ age: 18 })
   user.attributes = { name: 'Jim', foo: 'foo' }
 
   t.is(user.name, 'Jim')
   t.is(user.age, null)
-  t.is(user.foo, 'foo')
-  t.false('bar' in user)
+  t.false('foo' in user)
 
-  t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
+  t.deepEqual(Object.keys(user), ['name', 'age'])
+  t.deepEqual(Object.keys(Object.getPrototypeOf(user)), [])
 })
 
 test('set attributes through dot operator', t => {
@@ -39,7 +44,8 @@ test('set attributes through dot operator', t => {
   user.name = 'Jim'
   user.foo = 'foo'
 
-  t.deepEqual(user.attributes, { name: 'Jim', age: 18, foo: 'foo' })
+  t.deepEqual(user.attributes, { name: 'Jim', age: 18 })
 
   t.deepEqual(Object.keys(user), ['name', 'age', 'foo'])
+  t.deepEqual(Object.keys(Object.getPrototypeOf(user)), [])
 })
