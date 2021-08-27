@@ -10,12 +10,12 @@ const test = require('ava')
 const Model = require('../../lib/model')
 
 // 定义 Model 类
-class User extends Model {
-  static attributes = [
-    { field: 'name' },
-    { field: 'age' }
-  ]
-}
+const User = Model.extend({
+  attributes: {
+    name: {},
+    age: {}
+  }
+})
 
 test('set attributes through constructor', t => {
   const user = new User({ name: 'Jim', foo: 'foo' })
