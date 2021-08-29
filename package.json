@@ -1,5 +1,5 @@
 {
-  "name": "ar-front",
+  "name": "ar-model",
   "version": "0.1.0-preview",
   "description": "A data mapper framework using in web front.",
   "main": "lib/index.js",
