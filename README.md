@@ -36,12 +36,15 @@ await user.save()
 * [使用指南](#使用指南)
    * [访问和设置属性](#访问和设置属性)
    * [Model.extend](#modelextend)
+      * [类名称](#类名称)
       * [属性](#属性)
       * [计算属性](#计算属性)
       * [实例方法](#实例方法)
       * [静态方法](#静态方法)
       * [配置](#配置)
+   * [Model.config](#modelconfig)
    * [attributes](#attributes)
+   * [$model](#model)
    * [在 Vue 2.x 中使用](#在-vue-2x-中使用)
 * [License](#license)
 
@@ -171,12 +174,27 @@ console.log(typeof user.age) // 'number'
 const { Model } = require('ar-front')
 
 Model.extend({
+  name: '...',
   attributes: { /*...*/ },
   computed: { /*...*/ },
   actions: { /*...*/ },
   static: { /*...*/ },
   config: { /*...*/ }
 })
+```
+
+#### 类名称
+
+使用 `name` 定义模型类的名称。
+
+示例：
+
+```javascript
+const User = Model.extend({
+  name: 'User'
+})
+
+console.log(User.name) // 'User'
 ```
 
 #### 属性
@@ -188,8 +206,9 @@ Model.extend({
   - String
   - Boolean
   - Date
+  - Array
   - Object
-- 默认值：必须设置为一个函数，绑定的 `this` 是模型对象。
+- 默认值：可设置常量值或函数，函数绑定的 `this` 是模型实例。
 
 示例：
 
@@ -197,7 +216,8 @@ Model.extend({
 const User = Model.extend({
   attributes: {
     name: { type: String },
-    age: { type: Number, default () { return 18 } }
+    age: { type: Number, default: 18 },
+    registeredAt: { type: Date, default () { return new Date() }}
   }
 })
 ```
@@ -389,6 +409,26 @@ Model.extend({
   }
   ```
 
+### `Model.config`
+
+返回一个定制新的默认配置的 Model 类。如果你对默认的 Model 配置不满意，可以调用此方法生成一个新的 Model 类。
+
+例如下面新生成的 Model 类默认支持动态属性：
+
+```javascript
+const NewModel = Model.config({
+  dynamicAttributes: true
+})
+
+// 新的 Model 类也支持 extend 方法
+const User = NewModel.extend()
+
+// 可直接使用动态属性
+const user = new User({ name: 'Jim', age: 18 })
+console.log(user.name) // 'Jim'
+console.log(user.age) // 18
+```
+
 ### `attributes`
 
 定制 action 是通过 `attributes` 的 setter 和 getter 来实现的。我们还是以下面的模型类定义为例：
@@ -455,24 +495,54 @@ user.name // null
 user.age // 18
 ```
 
+### `$model`
+
+在实例对象上调用 `$model` 方法可返回模型类。
+
+示例：
+
+```javascript
+const User = Model.extend({
+  name: 'User'
+})
+
+const user = new User()
+console.log(user.$model === User) // true
+console.log(user.$model.name)  // 'User'
+```
+
 ### 在 Vue 2.x 中使用
 
 我很喜欢 Vue 库，所以当然希望它在 Vue 中能够实现双向绑定。Vue 2.x 曾说过，绑定的对象需要是 Plain Object 的，但其实并不完全是，`ar-front` 库可以很好地在 Vue 中使用，只不过需要结合一些特别的配置。
 
-想要在 Vue 2.x 中使用，定义模型类时需要特殊的 `config` 配置：
+想要在 Vue 2.x 中使用，只需要生成一个新的 Model 类。如下生成一个新的 Model 类并保存在 `model.js` 文件内：
 
 ```javascript
+// model.js
 import Vue from 'vue'
+import { Model } from 'ar-front'
 
-Model.extend({
-  config: {
-    defineAttributesIn: 'object',
-    setter (key, value) {
-      Vue.set(this, key, value)
-    },
-    deleter (key) {
-      Vue.delete(this, key)
-    }
+export default Model.config({
+  defineAttributesIn: 'object',
+  setter (key, value) {
+    Vue.set(this, key, value)
+  },
+  deleter (key) {
+    Vue.delete(this, key)
+  }
+})
+```
+
+定制模型类时引入 `model.js` 即可：
+
+```javascript
+// user.js
+import Model from './model'
+
+export default Model.extend({
+  name: 'User',
+  attributes: {
+    // ...
   }
 })
 ```
