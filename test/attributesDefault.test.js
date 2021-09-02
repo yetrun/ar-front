@@ -4,7 +4,7 @@ const Model = require('../lib/model')
 const User = Model.extend({
   attributes: {
     name: { default () { return 'Jim' } },
-    age: { default () { return 18 } }
+    age: { default: 18 }
   }
 })
 
