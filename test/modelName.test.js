@@ -6,7 +6,7 @@ const User = Model.extend({
 })
 
 test('get model name', t => {
-  t.is(User.modelName, 'User')
+  t.is(User.name, 'User')
 })
 
 test('get model class', t => {
