@@ -42,6 +42,7 @@ await user.save()
       * [实例方法](#实例方法)
       * [静态方法](#静态方法)
       * [配置](#配置)
+      * [混入](#混入)
    * [Model.config](#modelconfig)
    * [attributes](#attributes)
    * [$model](#model)
@@ -408,6 +409,35 @@ Model.extend({
     delete this[key]
   }
   ```
+
+####  混入
+
+使用 `mixin` 部分配置混入，示例：
+
+```javascript
+const restfulActions = {
+  actions: {
+    update () { /*...*/ },
+    destroy () { /*...*/ }
+  },
+  static: {
+    list () { /*...*/ },
+    find (id) { /*...*/ },
+    create (attrs) { /*...*/ }
+  }
+}
+
+Model.extend({
+  attributes: {
+    name: {},
+    age: {}
+  },
+  mixin: [
+    restfulActions,
+    // add other mixins
+  ]
+})
+```
 
 ### `Model.config`
 
