@@ -34,18 +34,35 @@ await user.save()
 * [安装](#安装)
 * [快速上手](#快速上手)
 * [使用指南](#使用指南)
-   * [访问和设置属性](#访问和设置属性)
-   * [Model.extend](#modelextend)
-      * [类名称](#类名称)
-      * [属性](#属性)
-      * [计算属性](#计算属性)
-      * [实例方法](#实例方法)
-      * [静态方法](#静态方法)
-      * [配置](#配置)
-      * [混入](#混入)
-   * [Model.config](#modelconfig)
-   * [attributes](#attributes)
-   * [$model](#model)
+   * [Model](#model)
+      * [访问和设置属性](#访问和设置属性)
+      * [Model.extend](#modelextend)
+         * [类名称](#类名称)
+         * [属性](#属性)
+         * [计算属性](#计算属性)
+         * [实例方法](#实例方法)
+         * [actions](#actions)
+         * [静态方法](#静态方法)
+         * [onTransform](#ontransform)
+         * [配置](#配置)
+         * [混入](#混入)
+      * [Model.config](#modelconfig)
+      * [attributes](#attributes)
+      * [$model](#model-1)
+   * [Collection](#collection)
+      * [引入方式](#引入方式)
+      * [Collection.extend](#collectionextend)
+         * [model](#model-2)
+         * [onTransform](#ontransform-1)
+         * [配置](#配置-1)
+      * [Collection.config](#collectionconfig)
+      * [constructor](#constructor)
+      * [调用数组方法](#调用数组方法)
+      * [#new](#new)
+   * [传输](#传输)
+      * [演示集合资源的派生](#演示集合资源的派生)
+      * [演示单个资源的派生](#演示单个资源的派生)
+      * [自定义传输机制](#自定义传输机制)
    * [在 Vue 2.x 中使用](#在-vue-2x-中使用)
 * [License](#license)
 
@@ -135,7 +152,9 @@ await user.save()
 
 ## 使用指南
 
-### 访问和设置属性
+### Model
+
+#### 访问和设置属性
 
 `ar-front` 最大的优点是直接在对象上设置和返回属性，并能够自动进行类型转换和设置默认值。
 
@@ -169,7 +188,7 @@ console.log(user.age) // 18
 console.log(typeof user.age) // 'number'
 ```
 
-### `Model.extend`
+#### `Model.extend`
 
 ```javascript
 const { Model } = require('ar-front')
@@ -184,7 +203,7 @@ Model.extend({
 })
 ```
 
-#### 类名称
+##### 类名称
 
 使用 `name` 定义模型类的名称。
 
@@ -198,7 +217,7 @@ const User = Model.extend({
 console.log(User.name) // 'User'
 ```
 
-#### 属性
+##### 属性
 
 使用 `attributes` 块定义计算属性，可定义属性的类型和默认值。
 
@@ -223,7 +242,7 @@ const User = Model.extend({
 })
 ```
 
-#### 计算属性
+##### 计算属性
 
 使用 `computed` 块定义计算属性。
 
@@ -258,9 +277,28 @@ console.log(user.firstName === 'James')
 console.log(user.lastName === 'Dean')
 ```
 
-#### 实例方法
+##### 实例方法
 
-使用 `actions` 块定义实例方法。
+使用 `methods` 块定义实例方法。
+
+示例：
+
+```javascript
+const User = Model.extend({
+  methods: {
+    getFullName () {
+      // ...
+    }
+  }
+})
+
+user = new User()
+user.getFullName()
+```
+
+##### `actions`
+
+使用 `actions` 块定义。`actions` 与 `methods` 不同的是，`methods` 只是纯粹的实例方法，`actions` 调用成功后会自动响应传输机制。我们一般会将 HTTP 调用放在 `actions` 内部。
 
 示例：
 
@@ -269,19 +307,15 @@ const User = Model.extend({
   actions: {
     async save () {
       // ...
-    },
-    getFullName () {
-      // ...
     }
   }
 })
 
 user = new User()
 await user.save()
-user.getFullName()
 ```
 
-#### 静态方法
+##### 静态方法
 
 使用 `static` 块定义静态方法。
 
@@ -303,7 +337,11 @@ await User.find(1)
 User.current()
 ```
 
-#### 配置
+##### `onTransform`
+
+自定义收到下游传输时的回调，详细见传输相关的[文档](#传输)。
+
+##### 配置
 
 使用 `config` 块定义配置。
 
@@ -410,7 +448,7 @@ Model.extend({
   }
   ```
 
-####  混入
+#####  混入
 
 使用 `mixin` 部分配置混入，示例：
 
@@ -439,7 +477,7 @@ Model.extend({
 })
 ```
 
-### `Model.config`
+#### `Model.config`
 
 返回一个定制新的默认配置的 Model 类。如果你对默认的 Model 配置不满意，可以调用此方法生成一个新的 Model 类。
 
@@ -459,7 +497,7 @@ console.log(user.name) // 'Jim'
 console.log(user.age) // 18
 ```
 
-### `attributes`
+#### `attributes`
 
 定制 action 是通过 `attributes` 的 setter 和 getter 来实现的。我们还是以下面的模型类定义为例：
 
@@ -525,7 +563,7 @@ user.name // null
 user.age // 18
 ```
 
-### `$model`
+#### `$model`
 
 在实例对象上调用 `$model` 方法可返回模型类。
 
@@ -539,6 +577,187 @@ const User = Model.extend({
 const user = new User()
 console.log(user.$model === User) // true
 console.log(user.$model.name)  // 'User'
+```
+
+### Collection
+
+新添加的 Collection 模块，用来定义集合资源。
+
+#### 引入方式
+
+```javascript
+import { Collection } from 'ar-front'
+```
+
+#### `Collection.extend`
+
+定义集合资源的方法，示例：
+
+```javascript
+Collection.extend({
+  model: User,
+  onTransform () {
+    // ...
+  },
+  config: {
+    // ...
+  }
+})
+```
+
+##### `model`
+
+`Model.extend` 定义的实例。
+
+##### `onTransform`
+
+自定义收到下游传输时的回调，详细见传输相关的[文档](#传输)。
+
+##### 配置
+
+当前仅有一个配置选项：
+
+- `deleter`: 自定义删除集合内索引的行为，默认是如下的函数：
+
+  ```javascript
+  function deleter (index) {
+    delete this[index]
+  }
+  ```
+
+#### `Collection.config`
+
+生成一个拥有其他默认配置的 Collection 模块，示例：
+
+```javascript
+Collection.config({
+  deleter (index) {
+    Vue.delete(this, index)
+  }
+})
+```
+
+#### `constructor`
+
+构造函数可以传递属性数组，例如：
+
+```javascript
+const Users = Collection.extend({
+  model: User
+})
+
+const users = new Users([
+  { id: 1, name: 'Jim', age: 18 },
+  { id: 2, name: 'Jane', age: 19 }
+])
+```
+
+#### 调用数组方法
+
+Collection 实例可以调用数组的方法，如 `push`、`splice` 等。
+
+#### `#new`
+
+`new` 方法可以生成一个下游的 Record 实例，例如：
+
+```javascript
+const Users = Collection.extend({
+  model: User
+})
+
+const users = new Users() // users.length === 0
+
+const user = users.new({ name: 'Jim', age: 18 })
+await user.save()
+// users.length === 1
+```
+
+### 传输
+
+传输是新引入的机制，其作用是在上游资源与下游资源之间维护一个通道，使得上游资源自动响应下游资源的数据变更。这里有几个重要的概念：
+
+- 上游资源：可以是 Collection，也可以是 Record
+- 下游资源：是上游资源派生出的 Record
+- 派生：上游资源生成下游资源，它们之间建立了通道
+
+我将用几个例子解释上游资源如何自动响应下游资源的变化。
+
+#### 演示集合资源的派生
+
+首先，我们定义单个资源和集合资源：
+
+```javascript
+const User = Model.extend({
+  attributes: {
+    id: {}, name: {}, age: {}
+  },
+  actions: {
+    save () {
+      // ...
+    }
+  }
+})
+
+const Users = Collection.extend({
+  model: User
+})
+```
+
+然后，我们演示如何由集合资源派生出一个资源：
+
+```javascript
+const users = new Users()
+const user = users.new()
+```
+
+紧接着，更新 `user` 的状态并保存到服务器：
+
+```javascript
+user.attributes = { name: 'Jim', age: 18 }
+await user.save()
+```
+
+最后，展示 `user` 自动添加到 `users` 中：
+
+```javascript
+console.log(users[0] === user)
+```
+
+#### 演示单个资源的派生
+
+单个资源也可派生资源，它用的是 `derive` 方法。下列代码中，`user2` 即为派生出的资源：
+
+```javascript
+const user = new User({ name: 'Jin', age: 18 })
+const user2 = user.derive()
+```
+
+`user2` 的更新会影响到 `user`，例如：
+
+```javascript
+user2.name = 'Jim'
+await user2.save()
+console.log(user.name) // 'Jim'
+```
+
+#### 自定义传输机制
+
+默认情况下，集合资源的默认响应行为是自动添加或删除资源，单个资源的默认响应行为是同步属性。自动添加是根据 `id` 属性判断的，自动删除是当资源拥有一个值为 `true` 的 `destroyed` 属性时。
+
+如果对默认行为不满意，可以自定义，`Model.extend` 和 `Collection.extend` 都可以传递 `onTransform` 选项：
+
+```javascript
+Model.extend({
+  onTransform (downstreamRecord, upstreamRecord) {
+    // 自定义响应行为
+  }
+})
+
+Collection.extend({
+  onTransform (downstreamRecord, upstreamCollection) {
+    // 自定义响应行为
+  }
+})
 ```
 
 ### 在 Vue 2.x 中使用
