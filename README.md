@@ -26,7 +26,7 @@ user.age += 1
 await user.save()
 ```
 
-以上仅是冰山一角，想获得完整的体验请使用 `ar-front` 库。
+以上仅是冰山一角，想获得完整的体验请使用 `ar-front` 库。想查看 `ar-front` 是如何在 Vue 项目中简化调用后端 API 的工作，可以参考一个[示例项目](https://github.com/yetrun/vue-todos)。
 
 ## 目录
 
