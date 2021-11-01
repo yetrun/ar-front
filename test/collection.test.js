@@ -99,3 +99,25 @@ test('转化为纯粹的数组', t => {
   t.deepEqual(users[1].attributes, userArray[1].attributes)
   t.true(Array.isArray(userArray))
 })
+
+test('结构和迭代器', t => {
+  const users = new Users([
+    { name: 'Jim', age: 18 },
+    { name: 'Jack', age: 19 },
+  ])
+
+  // 测试 for...of 迭代
+  for (const user of users) {
+    t.true(user instanceof User)
+  }
+
+  // 测试解构
+  const [user1, user2] = users
+  t.is(user1, users[0])
+  t.is(user2, users[1])
+
+  // 测试数组扩展
+  const userArray = [...users]
+  t.deepEqual(userArray[0], user1)
+  t.deepEqual(userArray[0], user2)
+})
