@@ -1,3 +1,5 @@
+// 测试 actions、static、methods
+
 const test = require('ava')
 const Model = require('../lib/model')
 

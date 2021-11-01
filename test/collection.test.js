@@ -6,6 +6,10 @@ const User = Model.extend({
   attributes: { name: {}, age: {} }
 })
 
+const Users = Collection.extend({
+  model: User
+})
+
 test('集合是一个简易数组', t => {
   const Users = Collection.extend({
     model: User
@@ -70,4 +74,28 @@ test('集合默认的 transformer 效果', t => {
 
   t.is(users.length, 3)
   t.deepEqual(users[2].attributes, { id: 3, name: 'Jane', age: 20 })
+})
+
+test('克隆一个 Collection', t => {
+  const users = new Users([
+    { name: 'Jim', age: 18 },
+    { name: 'Jack', age: 19 },
+  ])
+  const copiedUsers = users.clone()
+
+  t.deepEqual(users[0].attributes, copiedUsers[0].attributes)
+  t.deepEqual(users[1].attributes, copiedUsers[1].attributes)
+  t.true(copiedUsers instanceof Users)
+})
+
+test('转化为纯粹的数组', t => {
+  const users = new Users([
+    { name: 'Jim', age: 18 },
+    { name: 'Jack', age: 19 },
+  ])
+  const userArray = users.toArray()
+
+  t.deepEqual(users[0].attributes, userArray[0].attributes)
+  t.deepEqual(users[1].attributes, userArray[1].attributes)
+  t.true(Array.isArray(userArray))
 })
