@@ -3,8 +3,8 @@ const Model = require('../../lib/model')
 
 class User extends Model {
   static defineAttributes () {
-    this.defineAttribute('name', {})
-    this.defineAttribute('age', {})
+    this.attr('name', {})
+    this.attr('age', {})
   }
 }
 
